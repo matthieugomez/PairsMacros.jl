@@ -1,4 +1,6 @@
-module DataFramesMacro
+module DataFramesMacros
+
+using DataFrames
 
 function addkey!(membernames, nam)
     if !haskey(membernames, nam)
@@ -79,25 +81,27 @@ end
 ##############################################################################
 
 macro cols(arg)
-    make_vec_to_fun(arg; byrow = false)
+    esc(make_vec_to_fun(arg; byrow = false))
 end
 
 macro cols(args...)
-    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = false) for arg in args)...))
+    esc(Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = false) for arg in args)...)))
 end
 
 macro rows(arg)
-    make_vec_to_fun(arg; byrow = true)
+    esc(make_vec_to_fun(arg; byrow = true))
 end
 
 macro rows(args...)
-    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = true) for arg in args)...))
+    esc(Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = true) for arg in args)...)))
 end
 
-macro mymacro(args)
-    @show args
-end
-export @rows, @cols
+##############################################################################
+##
+## Export
+##
+##############################################################################
+export @rows, @cols, ByRow
 
 end
 

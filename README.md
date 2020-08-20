@@ -1,52 +1,41 @@
 DataFramesMacros.jl
 =============
 
-This package  makes it easier to construct calls `args => function => name` required by `DataFrames.jl`.
-This experimental package is an alternative to `DataFramesMeta`.
+This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`.
 
-
-Use `@cols` to apply a function on columns
 ```julia
+using DataFramesMacros
 @cols(z = mean(x))
 #> :x => mean => :z
-```
-
-Use `@rows` to apply a function on rows
-```julia
-@rows(z = x + y))
+@rows(z = x + y)
 #> [:x, :y] => ByRow(+) => :z
 ```
 
-
-Use `$` to substitute the name of certain columns
+Use `$` to substitute the name of certain columns by symbols
 ```julia
 u = :y
-@rows(z = x + $u)
-#> [:x, :y] => ByRow(+) => :z)
-```
-
-Use `obj` to use outside variables
-```julia
-u = [3, 4]
-@cols(z = mean(obj(u)))
-# Any[] => mean(u) => :z
+@cols(z = sum($u))
+#> [:y] => sum => :z)
+@cols($u = sum(x))
+#> [:x] => sum => :y)
 ```
 
 
-These macros are intended to be used within a `transform`/`combine`/`select`/`filter` call from  `DataFrames.jl`:
+
+
+These macros are intended to be used within `transform`/`combine`/`select`/`filter` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
 
 ```julia
 using DataFrames, DataFramesMacros
-df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
-transform!(df, @cols(z = mean(x)))
-transform!(df, @cols(z1 = mean(x), z2 = mean(y)))
-transform!(df, @rows(z = x + y))
-combine(df, @cols(z1 = mean(x), z2 = mean(y)))
-u = :y
-transform!(df, @rows(z2 = x + $u))
-transform!(df, @rows($u = x))
-u = [3, 4]
-transform!(df, @cols(z2 = x .+ obj(u)))
+df = DataFrame(x = [1, 2], y = [3, 4])
+combine(df, @cols(x_sum = sum(x), y_sum = sum(y)))
+#> combine(df, :x => sum => :x_sum, :y => sum => :y_sum)
+transform(df, @rows(z = x + y))
+#> transform(df, [:x, :y] => ByRow(+) => :z)
 filter(@cols(x > 1), df)
+#> filter(:x => >(1), df)
 ```
+See [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl) for an alternative approach that define different macros for `transform`/`combine`/`select`/`filter` etc.
+
+
 
