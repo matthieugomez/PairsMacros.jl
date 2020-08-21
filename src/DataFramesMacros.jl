@@ -2,6 +2,13 @@ module DataFramesMacros
 
 using DataFrames
 
+
+##############################################################################
+##
+## Modified code from DataFramesMeta.jl
+##
+##############################################################################
+
 function addkey!(membernames, nam)
     if !haskey(membernames, nam)
         membernames[nam] = gensym()
