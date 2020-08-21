@@ -43,4 +43,8 @@ filter(@cols(x > 1), df)
 This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is different: the same macro can be used for `transform`/`combine`/`select`/`filter` etc.
 
 
+# Issues
+This is an experimental package. Current issues is the following:
+- The macros treat all arguments similarly. This means that functions in arguments tend to be replaced it (for instance, one needs to do `map(^(f), x)` to avoid replacing `f` by a column with name `:f`). 
+
 

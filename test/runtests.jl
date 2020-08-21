@@ -14,3 +14,8 @@ u = :y
 # test obj
 global u = [3, 4]
 transform(df, @cols(z = sum(^(u)))).z == sum(u)
+
+
+# test fast path
+@cols(z = sum(skipmissing(x)))
+
