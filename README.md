@@ -20,7 +20,7 @@ u = :y
 #> [:x] => sum => :y
 ```
 
-Use `^` to refer to outside variables
+Use `^` to denote variables that do not refer to columns
 ```julia
 u = [0.25, 0.75]
 @cols(z = quantile(y, ^(u)))
