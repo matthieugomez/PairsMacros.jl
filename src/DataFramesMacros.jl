@@ -37,12 +37,22 @@ function replace_syms!(e::Expr, membernames)
 end
 
 
+isterminal(e) = false
+isterminal(e::Symbol) = true
+function isterminal(e::Expr)
+    if e.head === :$
+        true
+    else
+        false
+    end
+end
+
 function iscomposition(e::Expr)
     if e.head === :call
         if length(e.args) == 1
             true
         elseif length(e.args) == 2
-            if e.args[2] isa Symbol
+            if isterminal(e.args[2])
                 true
             else
                 iscomposition(e.args[2])
@@ -58,12 +68,14 @@ end
 function make_composition(e::Expr)
     if length(e.args) == 1
         e.args
-    elseif e.args[2] isa Symbol
+    elseif isterminal(e.args[2])
         e.args[1]
     else
         Expr(:call, :∘, e.args[1], make_composition(e.args[2]))
     end
 end
+
+
 
 
 function make_vec_to_fun(kw::Expr; byrow = false)
@@ -81,12 +93,14 @@ function make_vec_to_fun(kw::Expr; byrow = false)
         input = kw
     end
     body = replace_syms!(input, membernames)
-    if (input isa Expr) && (input.head === :call) && (length(input.args) > 1) && all(x -> x isa Symbol, input.args[2:end])
+    if (input isa Expr) && (input.head === :call) && (length(input.args) > 1) && all(isterminal, input.args[2:end])
         # like corr(x, y)
         f = input.args[1]
     elseif (input isa Expr) && iscomposition(input)
         # like mean(skipmissing(x))
         f = make_composition(input)
+    elseif isterminal(input)
+        f = identity
     else
         f = quote
                 function $funname($(values(membernames)...))
