@@ -48,7 +48,7 @@ function isterminal(e::Expr)
 end
 
 function iscomposition(e::Expr)
-    if e.head === :call
+    if e.head === :call && (e.args[1] !== :^)
         if length(e.args) == 1
             true
         elseif length(e.args) == 2
