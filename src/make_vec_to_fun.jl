@@ -4,35 +4,37 @@
 ##
 ##############################################################################
 
-function addkey!(membernames, nam)
+function addkey!(membernames::Dict, nam)
     if !haskey(membernames, nam)
         membernames[nam] = gensym()
     end
     membernames[nam]
 end
 
-replace_syms!(x, membernames) = x
-function replace_syms!(q::Symbol, membernames)
+parse_columns!(membernames::Dict, x) = x
+function parse_columns!(membernames::Dict, q::Symbol)
     addkey!(membernames, QuoteNode(q))
 end
-function replace_syms!(e::Expr, membernames)
-    if e.head === :$
+function parse_columns!(membernames::Dict, e::Expr)
+    if (e.head === :$)
+        length(e.args) == 1 || throw("This should not happen. Please file an issue Github")
         addkey!(membernames, e.args[1])
-    elseif e.head == :.
-        Expr(:., e.args[1], replace_syms!(e.args[2], membernames))
+    elseif (e.head == :.)
+        length(e.args) == 2 || throw("This should not happen. Please file an issue Github")
+        Expr(:., e.args[1], parse_columns!(membernames, e.args[2]))
     elseif e.head === :call
         if e.args[1] == :^
+            length(e.args) == 2 || throw("This should not happen. Please file an issue Github")
             e.args[2]
         elseif length(e.args) > 1
-            Expr(e.head, e.args[1], map(x -> replace_syms!(x, membernames), e.args[2:end])...)
+            Expr(e.head, e.args[1], (parse_columns!(membernames, x) for x in e.args[2:end])...)
         else
             e
         end
     else
-        Expr(e.head, map(x -> replace_syms!(x, membernames), e.args)...)
+        Expr(e.head, (parse_columns!(membernames, x) for x in e.args)...)
     end
 end
-
 
 isterminal(e) = false
 isterminal(e::Symbol) = true
@@ -41,19 +43,19 @@ isterminal(e::Expr) = e.head === :$
 function iscomposition(e::Expr)
     if e.head === :call && (e.args[1] !== :^)
         if length(e.args) == 1
-            true
+            # f()
+            return true
         elseif length(e.args) == 2
             if isterminal(e.args[2])
-                true
+                # f(x)
+                return true
             else
-                iscomposition(e.args[2])
+                # f(g(...))
+                return iscomposition(e.args[2])
             end
-        else
-            false
         end
-    else
-        false
     end
+    false
 end
 
 function make_composition(e::Expr)
@@ -62,32 +64,40 @@ function make_composition(e::Expr)
     elseif isterminal(e.args[2])
         e.args[1]
     else
-        Expr(:call, :∘, e.args[1], make_composition(e.args[2]))
+        Expr(:call, Base.:∘, e.args[1], make_composition(e.args[2]))
     end
 end
 
 function make_vec_to_fun(kw::Expr; byrow = false)
     funname = gensym()
     membernames = Dict{Any, Symbol}()
+
+    # deal with the left hand side
     if kw.head == :(=) || kw.head == :kw
-        output = kw.args[1]
-        if output isa Symbol
-            output = QuoteNode(output)
-        elseif output.head === :$
-            output = output.args[1]
+        # e.g. y = mean(x)
+        left = kw.args[1]
+        if left isa Symbol
+            newcol = QuoteNode(left)
+        elseif left.head === :$
+            newcol = left.args[1]
         end
-        input = kw.args[2]
+        right = kw.args[2]
     else
-        input = kw
+        # e.g. mean(x)
+        right = kw
     end
-    body = replace_syms!(input, membernames)
-    if (input isa Expr) && (input.head === :call) && (length(input.args) > 1) && all(isterminal, input.args[2:end])
-        # like corr(x, y)
-        f = input.args[1]
-    elseif (input isa Expr) && iscomposition(input)
-        # like mean(skipmissing(x))
-        f = make_composition(input)
-    elseif isterminal(input)
+
+    # parse the right hand side
+    body = parse_columns!(membernames, right)
+    # construct the function f
+   if (right isa Expr) && (right.head === :call) && (length(right.args) > 1) && all(x -> x isa Symbol, right.args[2:end])
+        # e.g. corr(x, y)
+        f = right.args[1]
+    elseif (right isa Expr) && iscomposition(right)
+        # e.g. mean(skipmissing(x))
+        f = make_composition(right)
+    elseif isterminal(right)
+        # e.g. x
         f = identity
     else
         f = quote
@@ -99,15 +109,20 @@ function make_vec_to_fun(kw::Expr; byrow = false)
     if byrow
         f = quote ByRow($f) end
     end
-    if kw.head == :(=) || kw.head == :kw
-        quote
-            $(Expr(:vect, keys(membernames)...)) => $f => $output
+
+    cols = Expr(:vect, keys(membernames)...)
+
+    # put everything together
+        if kw.head == :(=) || kw.head == :kw
+            quote
+                $cols => $f => $newcol
+            end
+        else
+            quote
+                $cols => $f
+            end
         end
-    else
-        quote
-            $(Expr(:vect, keys(membernames)...)) => $f
-        end
-    end
+
 end
 
 
@@ -115,4 +130,8 @@ function make_vec_to_fun(kw::QuoteNode; byrow = false)
     return kw
 end
 
+
+function make_vec_to_fun(args...; byrow = false)
+    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = byrow) for arg in args)...))
+end
 

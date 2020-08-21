@@ -1,25 +1,35 @@
 using Test, DataFrames, DataFramesMacros
 df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
-@test repr(@cols(z = sum(x))) == "[:x] => (sum => :z)"
-@test repr(@rows(z = x + y)) == "[:x, :y] => (ByRow{typeof(+)}(+) => :z)"
+# one arg
+@test (@cols(z = sum(x))) == ([:x] => sum => :z)
+@test (@cols(sum(x))) == ([:x] => sum)
+@test (@cols(z = x)) == ([:x] => identity => :z)
+@test (@rows(z = x + y)) == ([:x, :y] => ByRow(+) => :z)
+@test (@cols(z = sum(skipmissing(x)))) == ([:x] => sum ∘ skipmissing => :z)
+
+
+@test transform(df, @cols(z = 1)).z == fill(1, size(df, 1))
+@test transform(df, @cols(z = sum([1, 2, 3]))).z == fill(sum([1, 2, 3]), size(df, 1))
+
+
+# multiple args
 @test combine(df, @cols(z1 = sum(x), z2 = sum(y))).z2 == [sum(df.y)]
 @test combine(df, @cols(z1 = sum(x), z2 = sum(y))).z2 == [sum(df.y)]
 @test size(filter(@cols(x > 1), df), 1) == 1
-@test combine(df, @cols(z = sum(skipmissing(x)))).z == [sum(df.x)]
 
 # test $
 u = :y
-@test repr(@cols(z = sum($u))) == "[:y] => (sum => :z)"
-@test repr(@cols(z = sum($u))) == "[:y] => (sum => :z)"
-@test repr(@rows($u = x)) == "[:x] => (ByRow{typeof(identity)}(identity) => :y)"
+@test (@cols(z = sum($u))) == ([:y] => sum => :z)
+@test (@cols(z = sum($u))) == ([:y] => sum => :z)
+@test (@rows($u = x)) == ([:x] => ByRow(identity) => :y)
+@test (@cols(z = sum(skipmissing($u)))) == ([:y] => sum ∘ skipmissing => :z)
 u = [:y]
-@test repr(@cols(z = sum($(u[1])))) == "[:y] => (sum => :z)"
+@test (@cols(z = sum($(u[1])))) == ([:y] => sum => :z)
 
 # test obj
 u = [3, 4]
 transform(df, @cols(z = sum(^(u)))).z == sum(u)
 
-
-# test fast path
-
-
+# test macro string
+u = :y
+@test(repr(cols"z = sum($(u)_v)") == repr([:y_v] => (sum => :z)))
