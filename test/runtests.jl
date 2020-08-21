@@ -5,7 +5,7 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test combine(df, @cols(z1 = sum(x), z2 = sum(y))).z2 == [sum(df.y)]
 @test combine(df, @cols(z1 = sum(x), z2 = sum(y))).z2 == [sum(df.y)]
 @test size(filter(@cols(x > 1), df), 1) == 1
-@test @cols(z = sum(skipmissing(x)))
+@test combine(df, @cols(z = sum(skipmissing(x)))).z == [sum(df.x)]
 
 # test $
 u = :y
