@@ -1,7 +1,7 @@
 DataFramesMacros.jl
 =============
 
-This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`.
+This package exports two macros, `@cols` and `@rows` that construct calls of the form `args => function => name`.
 
 ```julia
 using DataFramesMacros
@@ -15,13 +15,17 @@ Use `$` to substitute the name of certain columns by symbols
 ```julia
 u = :y
 @cols(z = sum($u))
-#> [:y] => sum => :z)
+#> [:y] => sum => :z
 @cols($u = sum(x))
-#> [:x] => sum => :y)
+#> [:x] => sum => :y
 ```
 
-
-
+Use `^` to refer to outside variables
+```julia
+u = [0.25, 0.75]
+@cols(z = quantile(y, ^(u)))
+#> [:y] => x -> quantile(x, u) => :z
+```
 
 These macros are intended to be used within `transform`/`combine`/`select`/`filter` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
 
@@ -35,7 +39,8 @@ transform(df, @rows(z = x + y))
 filter(@cols(x > 1), df)
 #> filter(:x => >(1), df)
 ```
-See [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl) for an alternative approach that define different macros for `transform`/`combine`/`select`/`filter` etc.
+
+This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is different: the same macro can be used for `transform`/`combine`/`select`/`filter` etc.
 
 
 
