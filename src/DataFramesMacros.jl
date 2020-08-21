@@ -39,13 +39,7 @@ end
 
 isterminal(e) = false
 isterminal(e::Symbol) = true
-function isterminal(e::Expr)
-    if e.head === :$
-        true
-    else
-        false
-    end
-end
+isterminal(e::Expr) = e.head === :$
 
 function iscomposition(e::Expr)
     if e.head === :call && (e.args[1] !== :^)
