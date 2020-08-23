@@ -11,8 +11,9 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test size(filter(@cols((x > 1) & (y < 3)), df), 1) == 0
 
 
-@test (@rows(z = rand())) == (Any[] => (ByRow{typeof(rand)}(rand) => :z))
-@test (@rows(z = x + y)) == ([:x, :y] => ByRow(+) => :z)
+@test (@rows(z = rand())) == (Any[] => (DataFrames.ByRow{typeof(rand)}(rand) => :z))
+@test (@rows(z = x - y))  == ([:x, :y] => (DataFrames.ByRow{typeof(-)}(-) => :z))
+@test (@rows(z = y - x))  == ([:y, :x] => (DataFrames.ByRow{typeof(-)}(-) => :z))
 @test transform(df, @cols(z = 1)).z == fill(1, size(df, 1))
 @test transform(df, @cols(z = sum([1, 2, 3]))).z == fill(sum([1, 2, 3]), size(df, 1))
 

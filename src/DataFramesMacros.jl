@@ -1,7 +1,6 @@
 module DataFramesMacros
-
+using DataStructures
 using DataFrames
-
 include("make_vec_to_fun.jl")
 
 macro cols(args...)
@@ -30,6 +29,6 @@ macro rows_str(str)
     end
 end
 
-export @rows, @cols, @cols_str, @rows_str, ByRow
+export @rows, @cols, @cols_str, @rows_str
 
 end
