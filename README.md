@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/matthieugomez/DataFramesMacros.jl.svg?branch=master)](https://travis-ci.com/matthieugomez/DataFramesMacros.jl)
+[![Coverage Status](https://coveralls.io/repos/matthieugomez/DataFramesMacros.jl/badge.svg?branch=master)](https://coveralls.io/r/matthieugomez/DataFramesMacros.jl?branch=master)
+
+
 DataFramesMacros.jl
 =============
 

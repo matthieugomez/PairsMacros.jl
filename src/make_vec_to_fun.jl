@@ -66,7 +66,7 @@ end
 function make_vec_to_fun(e::Expr; byrow = false)
     membernames = Dict{Any, Symbol}()
     # deal with the left hand side
-    if e.head === :(=) || e.head === :kw
+    if e.head === :(=)
         # e.g. y = mean(x)
         left = e.args[1]
         if left isa Symbol
@@ -104,7 +104,7 @@ function make_vec_to_fun(e::Expr; byrow = false)
     end
     
     # put everything together
-    if e.head === :(=) || e.head === :kw
+    if e.head === :(=)
         quote
             $source => $f => $target
         end
