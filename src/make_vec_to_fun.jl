@@ -17,14 +17,14 @@ function parse_columns!(membernames::Dict, q::Symbol)
 end
 function parse_columns!(membernames::Dict, e::Expr)
     if (e.head === :$)
-        length(e.args) == 1 || throw("This should not happen. Please file an issue Github")
+        length(e.args) == 1 || throw("Malformed Expression")
         addkey!(membernames, e.args[1])
     elseif (e.head == :.)
-        length(e.args) == 2 || throw("This should not happen. Please file an issue Github")
+        length(e.args) == 2 || throw("Malformed Expression")
         Expr(:., e.args[1], parse_columns!(membernames, e.args[2]))
     elseif e.head === :call
         if e.args[1] == :^
-            length(e.args) == 2 || throw("This should not happen. Please file an issue Github")
+            length(e.args) == 2 || throw("Malformed Expression")
             e.args[2]
         elseif length(e.args) > 1
             Expr(e.head, e.args[1], (parse_columns!(membernames, x) for x in e.args[2:end])...)
@@ -60,7 +60,8 @@ end
 
 function make_composition(e::Expr)
     if length(e.args) == 1
-        e.args
+        # f()
+        e.args[1]
     elseif isterminal(e.args[2])
         e.args[1]
     else
@@ -68,66 +69,64 @@ function make_composition(e::Expr)
     end
 end
 
-function make_vec_to_fun(kw::Expr; byrow = false)
+function make_vec_to_fun(e::Expr; byrow = false)
     funname = gensym()
     membernames = Dict{Any, Symbol}()
 
     # deal with the left hand side
-    if kw.head == :(=) || kw.head == :kw
+    if e.head == :(=) || e.head == :kw
         # e.g. y = mean(x)
-        left = kw.args[1]
-        if left isa Symbol
-            newcol = QuoteNode(left)
-        elseif left.head === :$
-            newcol = left.args[1]
+        e_left = e.args[1]
+        if e_left isa Symbol
+            target = QuoteNode(e_left)
+        elseif e_left.head === :$
+            target = e_left.args[1]
         end
-        right = kw.args[2]
+        e_right = e.args[2]
     else
         # e.g. mean(x)
-        right = kw
+        e_right = e
     end
 
     # parse the right hand side
-    body = parse_columns!(membernames, right)
+    e_right_parsed = parse_columns!(membernames, e_right)
+
     # construct the function f
-   if (right isa Expr) && (right.head === :call) && (length(right.args) > 1) && all(x -> x isa Symbol, right.args[2:end])
-        # e.g. corr(x, y)
-        f = right.args[1]
-    elseif (right isa Expr) && iscomposition(right)
-        # e.g. mean(skipmissing(x))
-        f = make_composition(right)
-    elseif isterminal(right)
+    if isterminal(e_right)
         # e.g. x
         f = identity
+    elseif (e_right isa Expr) && (e_right.head === :call) && (length(e_right.args) > 1) && all(x -> x isa Symbol, e_right.args[2:end])
+        # e.g. corr(x, y)
+        f = e_right.args[1]
+    elseif (e_right isa Expr) && iscomposition(e_right)
+        # e.g. mean(skipmissing(x))
+        f = make_composition(e_right)
     else
         f = quote
                 function $funname($(values(membernames)...))
-                    $body 
+                    $e_right_parsed
                 end
             end
     end
     if byrow
         f = quote ByRow($f) end
     end
-
-    cols = Expr(:vect, keys(membernames)...)
-
+    source = Expr(:vect, keys(membernames)...)
     # put everything together
-        if kw.head == :(=) || kw.head == :kw
-            quote
-                $cols => $f => $newcol
-            end
-        else
-            quote
-                $cols => $f
-            end
+    if e.head == :(=) || e.head == :kw
+        quote
+            $source => $f => $target
         end
-
+    else
+        quote
+            $source => $f
+        end
+    end
 end
 
 
-function make_vec_to_fun(kw::QuoteNode; byrow = false)
-    return kw
+function make_vec_to_fun(e::QuoteNode; byrow = false)
+    return e
 end
 
 

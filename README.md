@@ -42,7 +42,7 @@ filter(@cols(x > 1), df)
 #> filter(:x => >(1), df)
 ```
 
-This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is different: the same macro can be used for `transform`/`combine`/`select`/`filter` etc. 
+This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is more minimial in the sense that the same macro can be used for `transform`/`combine`/`select`/`filter` etc. 
 
 
 
