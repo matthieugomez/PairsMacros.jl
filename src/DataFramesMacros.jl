@@ -1,6 +1,6 @@
 module DataFramesMacros
-using DataStructures
 using DataFrames
+
 include("make_vec_to_fun.jl")
 
 macro cols(args...)

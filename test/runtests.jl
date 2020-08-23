@@ -12,8 +12,9 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 
 
 @test (@rows(z = rand())) == (Any[] => (DataFrames.ByRow{typeof(rand)}(rand) => :z))
-@test (@rows(z = x - y))  == ([:x, :y] => (DataFrames.ByRow{typeof(-)}(-) => :z))
-@test (@rows(z = y - x))  == ([:y, :x] => (DataFrames.ByRow{typeof(-)}(-) => :z))
+@test transform(df, @rows(z = x - y)).z  == df.x .- df.y
+@test transform(df, @rows(z = y - x)).z  == df.y .- df.x
+@test transform(df, @rows(z = x - x)).z  == df.x .- df.x
 @test transform(df, @cols(z = 1)).z == fill(1, size(df, 1))
 @test transform(df, @cols(z = sum([1, 2, 3]))).z == fill(sum([1, 2, 3]), size(df, 1))
 
