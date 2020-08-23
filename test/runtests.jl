@@ -1,12 +1,12 @@
 using Test, DataFrames, DataFramesMacros
 df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 # one arg
-@test (@cols(z = sum(x))) == ([:x] => sum => :z)
-@test (@cols(sum(x))) == ([:x] => sum)
-@test (@cols(z = x)) == ([:x] => identity => :z)
+@test (@cols(z = sum(x))) == (:x => sum => :z)
+@test (@cols(sum(x))) == (:x => sum)
+@test (@cols(z = x)) == (:x => :z)
 @test (@cols(x)) == :x
 @test select(df, @cols(x)).x == df.x
-@test (@cols(z = sum(skipmissing(x)))) == ([:x] => sum ∘ skipmissing => :z)
+@test (@cols(z = sum(skipmissing(x)))) == (:x => sum ∘ skipmissing => :z)
 @test transform(df, @cols(z = exp.(x))).z == exp.(df.x)
 
 
@@ -28,12 +28,12 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 
 # test $
 u = :y
-@test (@cols(z = sum($u))) == ([:y] => sum => :z)
-@test (@cols(z = sum($u))) == ([:y] => sum => :z)
-@test (@rows($u = x)) == ([:x] => ByRow(identity) => :y)
-@test (@cols(z = sum(skipmissing($u)))) == ([:y] => sum ∘ skipmissing => :z)
+@test (@cols(z = sum($u))) == (:y => sum => :z)
+@test (@cols(z = sum($u))) == (:y => sum => :z)
+@test (@rows($u = x)) == (:x => :y)
+@test (@cols(z = sum(skipmissing($u)))) == (:y => sum ∘ skipmissing => :z)
 u = [:y]
-@test (@cols(z = sum($(u[1])))) == ([:y] => sum => :z)
+@test (@cols(z = sum($(u[1])))) == (:y => sum => :z)
 
 # test obj
 u = [3, 4]
@@ -41,4 +41,4 @@ transform(df, @cols(z = sum(^(u)))).z == sum(u)
 
 # test macro string
 u = :y
-@test(repr(cols"z = sum($(u)_v)") == repr([:y_v] => (sum => :z)))
+@test(repr(cols"z = sum($(u)_v)") == repr(:y_v => (sum => :z)))

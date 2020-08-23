@@ -85,13 +85,14 @@ function make_vec_to_fun(e::Expr; byrow = false)
 
     # parse the right hand side
     right = parse_columns!(membernames, right)
-    source = Expr(:vect, keys(membernames)...)
+    if length(keys(membernames)) == 1
+        source = first(keys(membernames))
+    else
+        source = Expr(:vect, keys(membernames)...)
+    end
     set = Set(values(membernames))
     # construct the function f, avoiding anonymous function if possible (avoid compilation)
-    if right ∈ set
-        # e.g. x
-        f = Base.identity
-    elseif iscomposition(right, set)
+    if iscomposition(right, set)
         # e.g. mean(skipmissing(x))
         # Would be nice to also handle x + x but hard (i) order matters (x-y) (ii) duplication matters (x+x)
         f = make_composition(right, set)
@@ -104,13 +105,26 @@ function make_vec_to_fun(e::Expr; byrow = false)
     end
     
     # put everything together
-    if e.head === :(=)
-        quote
-            $source => $f => $target
+    if right ∈ set
+        # e.g. x
+        if e.head === :(=)
+            quote
+                $source => $target
+            end
+        else
+            quote
+                $source
+            end
         end
     else
-        quote
-            $source => $f
+        if e.head === :(=)
+            quote
+                $source => $f => $target
+            end
+        else
+            quote
+                $source => $f
+            end
         end
     end
 end
