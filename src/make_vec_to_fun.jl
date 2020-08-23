@@ -115,8 +115,8 @@ function make_vec_to_fun(e::Expr; byrow = false)
     end
 end
 
-function make_vec_to_fun(e::QuoteNode; byrow = false)
-    return e
+function make_vec_to_fun(e::Symbol; byrow = false)
+    return QuoteNode(e)
 end
 
 function make_vec_to_fun(args...; byrow = false)
