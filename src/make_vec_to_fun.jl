@@ -63,10 +63,10 @@ function make_composition(e::Expr, set::Set)
     end
 end
 
-function make_vec_to_fun(e::Expr; byrow = false)
+function make_vec_to_fun(e; byrow = false)
     membernames = Dict{Any, Symbol}()
     # deal with the left hand side
-    if e.head === :(=)
+    if (e isa Expr) && (e.head === :(=))
         # e.g. y = mean(x)
         left = e.args[1]
         if left isa Symbol
@@ -107,7 +107,7 @@ function make_vec_to_fun(e::Expr; byrow = false)
     # put everything together
     if right ∈ set
         # e.g. x
-        if e.head === :(=)
+        if (e isa Expr) && (e.head === :(=))
             quote
                 $source => $target
             end
@@ -117,7 +117,7 @@ function make_vec_to_fun(e::Expr; byrow = false)
             end
         end
     else
-        if e.head === :(=)
+        if (e isa Expr) && (e.head === :(=))
             quote
                 $source => $f => $target
             end
@@ -129,9 +129,6 @@ function make_vec_to_fun(e::Expr; byrow = false)
     end
 end
 
-function make_vec_to_fun(e::Symbol; byrow = false)
-    return QuoteNode(e)
-end
 
 function make_vec_to_fun(args...; byrow = false)
     Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = byrow) for arg in args)...))
