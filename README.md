@@ -38,7 +38,7 @@ These macros are intended to be used within `transform`/`combine`/`select`/`filt
 ```julia
 using DataFrames, DataFramesMacros
 df = DataFrame(x = [1, 2], y = [3, 4])
-combine(df, @cols(x_sum = sum(x), y_sum = sum(y)))
+combine(df, @cols(x_sum = sum(x)), @cols(y_sum = sum(y)))
 #> combine(df, :x => sum => :x_sum, :y => sum => :y_sum)
 transform(df, @rows(z = x + y))
 #> transform(df, [:x, :y] => ByRow(+) => :z)
@@ -48,5 +48,6 @@ filter(@cols(x > 1), df)
 
 This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is more minimial in the sense that the same macro can be used for `transform`/`combine`/`select`/`filter` etc. 
 
+combine(df, @cols(mean, r"x.*"), @cols(sd, r"x.*"))
 
 

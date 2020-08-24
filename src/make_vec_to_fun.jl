@@ -117,7 +117,7 @@ function make_vec_to_fun(e; byrow = false)
 end
 
 
-function make_vec_to_fun(args...; byrow = false)
-    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = byrow) for arg in args)...))
-end
+#function make_vec_to_fun(args...; byrow = false)
+#    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = byrow) for arg in args)...))
+#end
 
