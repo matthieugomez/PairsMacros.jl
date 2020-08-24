@@ -37,28 +37,23 @@ end
 iscomposition(e, set::Set) = false
 function iscomposition(e::Expr, set::Set)
     if e.head === :call
-        if length(e.args) == 1
-            # f() 
-            return true
-        elseif (length(e.args) == 2) && (e.args[2] ∈ set)
-            # f(x)
+        if length(e.args) == 1 || ((length(e.args) == 2) && (e.args[2] ∈ set))
+            # f() or f(x)
             return true
         elseif length(e.args) == 2
             # f(g(...))
             return iscomposition(e.args[2], set)
         end
     end
-    false
+    return false
 end
 
 function make_composition(e::Expr, set::Set)
     if e.head === :call
-        if length(e.args) == 1
-            return e.args[1]
-        elseif (length(e.args) == 2) && (e.args[2] ∈ set)
+        if length(e.args) == 1 || ((length(e.args) == 2) && (e.args[2] ∈ set))
             return e.args[1]
         elseif length(e.args) == 2
-            Expr(:call, :(Base.:∘), e.args[1], make_composition(e.args[2], set))
+            return Expr(:call, :(Base.:∘), e.args[1], make_composition(e.args[2], set))
         end
     end
 end
@@ -66,7 +61,7 @@ end
 function make_vec_to_fun(e; byrow = false)
     membernames = Dict{Any, Symbol}()
     # deal with the left hand side
-    if (e isa Expr) && (e.head === :(=))
+    if isa(e, Expr) && (e.head === :(=))
         # e.g. y = mean(x)
         left = e.args[1]
         if left isa Symbol
@@ -107,24 +102,16 @@ function make_vec_to_fun(e; byrow = false)
     # put everything together
     if right ∈ set
         # e.g. x
-        if (e isa Expr) && (e.head === :(=))
-            quote
-                $source => $target
-            end
+        if isa(e, Expr) && (e.head === :(=))
+            return quote $source => $target end
         else
-            quote
-                $source
-            end
+            return source
         end
     else
-        if (e isa Expr) && (e.head === :(=))
-            quote
-                $source => $f => $target
-            end
+        if isa(e, Expr) && (e.head === :(=))
+            return quote $source => $f => $target end
         else
-            quote
-                $source => $f
-            end
+            return quote $source => $f end
         end
     end
 end

@@ -5,6 +5,7 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test (@cols(sum(x))) == (:x => sum)
 @test (@cols(z = x)) == (:x => :z)
 @test (@cols(x)) == :x
+
 @test select(df, @cols(x)).x == df.x
 @test (@cols(z = sum(skipmissing(x)))) == (:x => sum ∘ skipmissing => :z)
 @test transform(df, @cols(z = exp.(x))).z == exp.(df.x)
