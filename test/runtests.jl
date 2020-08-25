@@ -33,7 +33,13 @@ u = [:y]
 
 # test obj
 u = [3, 4]
-transform(df, @cols(z = sum(^(u)))).z == sum(u)
+@test combine(df, @cols(z = sum(^(u)))).z == [sum(u)]
+
+
+# test hygiene
+mean = x -> x
+@test transform(df, @cols(z = mean(x))).z == df.x
+
 
 # test macro string
 #u = :y

@@ -92,26 +92,26 @@ function make_vec_to_fun(e; byrow = false)
         # Would be nice to also handle x + x but hard (i) order matters (x-y) (ii) duplication matters (x+x)
         f = make_composition(right, set)
     else
-        f = Expr(:->, Expr(:tuple, values(membernames)...), right)
+        f = quote $(Expr(:tuple, values(membernames)...)) ->  $right end
     end
 
     if byrow
-        f = Expr(:call, :(DataFramesMacros.ByRow), f)
+        f = quote DataFramesMacros.ByRow($f) end
     end
     
     # put everything together
     if right ∈ set
         # e.g. x
         if isa(e, Expr) && (e.head === :(=))
-            return quote $source => $target end
+            return quote Base.:(=>)($source, $target) end
         else
             return source
         end
     else
         if isa(e, Expr) && (e.head === :(=))
-            return quote $source => $f => $target end
+            return quote Base.:(=>)($source, Base.:(=>)($f, $target)) end
         else
-            return quote $source => $f end
+            return quote Base.:(=>)($source, $f) end
         end
     end
 end
