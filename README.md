@@ -48,6 +48,6 @@ filter(@cols(x > 1), df)
 
 This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is more minimial in the sense that the same macro can be used for `transform`/`combine`/`select`/`filter` etc. 
 
-combine(df, @cols(mean, r"x.*"), @cols(sd, r"x.*"))
+`combine(df, @cols(mean, r"x.*"), @cols(sd, r"x.*"))`
 
 
