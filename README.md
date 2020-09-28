@@ -31,6 +31,8 @@ u = [0.25, 0.75]
 #> [:y] => x -> quantile(x, u) => :z
 @cols(z = map(^(cos), y)
 #> [:y] => x -> map(cos, x) => :z
+@rows(z = tryparse(^(Float64), y)
+#> [:y] => x -> tryparse(Float64, x) => :z
 ```
 
 These macros are intended to be used within `transform`/`combine`/`select`/`filter` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
