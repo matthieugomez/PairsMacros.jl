@@ -56,7 +56,7 @@ function parse_helper(rhs, byrow)
     else
         fn = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
     end
-    if byrow & !isempty(set)
+    if byrow
         fn = quote PairsMacros.ByRow($fn) end
     end
     return source, fn, rhs ∉ set
