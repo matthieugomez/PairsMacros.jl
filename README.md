@@ -38,11 +38,10 @@ u = [0.25, 0.75]
 ```
 ## Goals
 
-These macros are intended to be used within `transform`/`combine`/`select` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
+These macros make it easier to construct Pairs for  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl) `transform`/`combine`/`select`, e.g.:
 ```julia
 using DataFrames, PairsMacros
 df = DataFrame(x = [1, 2], y = [3, 4])
 transform(df, @cols(z = sum(x)))
 ```
-
-Compared to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl), the approach is very minimal: it only exports two macros `@cols` and `@rows`. The syntax is also slightly different: refer to variable names using `x` rather than `:x`.
+This package is a minimal alternative to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl).
