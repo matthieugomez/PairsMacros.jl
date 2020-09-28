@@ -5,9 +5,10 @@
 PairsMacros.jl
 =============
 
-This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`. These macros are intended to be used within `transform`/`combine`/`select` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl). 
+This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`. 
 
 
+## Syntax
 ```julia
 using PairsMacros
 @cols(z = sum(x))
@@ -35,6 +36,13 @@ u = [0.25, 0.75]
 @rows(z = tryparse(^(Float64), y)
 #> [:y] => x -> tryparse(Float64, x) => :z
 ```
+## Goals
 
+These macros are intended to be used within `transform`/`combine`/`select` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
+```julia
+using DataFrames, PairsMacros
+df = DataFrame(x = [1, 2], y = [3, 4])
+transform(df, @cols(z = sum(x)))
+```
 
 Compared to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl), the approach is very minimal: it only exports two macros `@cols` and `@rows`. The syntax is also slightly different: refer to variable names using `x` rather than `:x`.
