@@ -12,7 +12,7 @@ This package exports two macros, `@cols` and `@rows` that make it easier to cons
 ```julia
 using PairsMacros
 @cols z = sum(x)
-#> :x => sum => :z
+#> [:x] => sum => :z
 @rows z = x + y
 #> [:x, :y] => ByRow(+) => :z
 ```
@@ -30,11 +30,11 @@ Use `^` to denote variables that do not refer to columns
 ```julia
 u = [0.25, 0.75]
 @cols z = quantile(y, ^(u))
-#> [:y] => x -> quantile(x, u) => :z
+#> [:y] => (x -> quantile(x, u)) => :z
 @cols z = map(^(cos), y)
-#> [:y] => x -> map(cos, x) => :z
+#> [:y] => (x -> map(cos, x)) => :z
 @rows z = tryparse(^(Float64), y)
-#> [:y] => x -> tryparse(Float64, x) => :z
+#> [:y] => (x -> tryparse(Float64, x)) => :z
 ```
 ## Goals
 
