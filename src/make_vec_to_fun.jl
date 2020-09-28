@@ -96,7 +96,7 @@ function make_vec_to_fun(e; byrow = false)
     end
 
     if byrow
-        f = quote DataFrames.ByRow($f) end
+        f = quote PairsMacros.ByRow($f) end
     end
     
     # put everything together
