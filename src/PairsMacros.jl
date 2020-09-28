@@ -27,7 +27,7 @@ function make_vec_to_fun(e, byrow)
         if has_fun
             return quote Base.:(=>)($source, Base.:(=>)($f, $target)) end
         else
-        	return quote Base.:(=>)($source, $target) end
+            return quote Base.:(=>)($source, $target) end
         end
     else
         # e.g. mean(x)
@@ -35,7 +35,7 @@ function make_vec_to_fun(e, byrow)
         if has_fun
             return quote Base.:(=>)($source, $f) end
         else
-        	return source
+            return source
         end
     end
 end
@@ -52,7 +52,6 @@ function parse_helper(rhs, byrow)
     if isatomic(rhs, set)
         # e.g. mean(skipmissing(x)) becomes skipmissing ∘ mean
         # this avoids anonymous function to avoid compilation
-        # Would be nice to also handle x + x but hard (i) order matters (x-y) (ii) duplication matters (x+x)
         f = make_composition(rhs, set)
     else
         f = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
