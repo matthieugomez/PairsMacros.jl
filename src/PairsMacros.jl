@@ -23,17 +23,17 @@ function make_vec_to_fun(e, byrow)
         else
             throw("Malformed Expression")
         end
-        source, f, has_fun = parse_helper(e.args[2], byrow)
-        if has_fun
-            return quote Base.:(=>)($source, Base.:(=>)($f, $target)) end
+        source, fn, has_fn = parse_helper(e.args[2], byrow)
+        if has_fn
+            return quote Base.:(=>)($source, Base.:(=>)($fn, $target)) end
         else
             return quote Base.:(=>)($source, $target) end
         end
     else
         # e.g. mean(x)
-        source, f, has_fun = parse_helper(e, byrow)
-        if has_fun
-            return quote Base.:(=>)($source, $f) end
+        source, fn, has_fn = parse_helper(e, byrow)
+        if has_fn
+            return quote Base.:(=>)($source, $fn) end
         else
             return source
         end
@@ -52,14 +52,14 @@ function parse_helper(rhs, byrow)
     if isatomic(rhs, set)
         # e.g. mean(skipmissing(x)) becomes skipmissing ∘ mean
         # this avoids anonymous function to avoid compilation
-        f = make_composition(rhs, set)
+        fn = make_composition(rhs, set)
     else
-        f = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
+        fn = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
     end
     if byrow & !isempty(set)
-        f = quote PairsMacros.ByRow($f) end
+        fn = quote PairsMacros.ByRow($fn) end
     end
-    return source, f, rhs ∉ set
+    return source, fn, rhs ∉ set
 end
 
 # when Cols() implemented in DataFrames.jl, 
