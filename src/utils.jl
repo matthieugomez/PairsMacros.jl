@@ -34,15 +34,15 @@ function parse_columns!(membernames::Dict, e::Expr)
     end
 end
 
-iscomposition(e, set::Set) = false
-function iscomposition(e::Expr, set::Set)
+isatomic(e, set::Set) = false
+function isatomic(e::Expr, set::Set)
     if e.head === :call
         if length(e.args) == 1 || ((length(e.args) == 2) && (e.args[2] ∈ set))
             # f() or f(x)
             return true
         elseif length(e.args) == 2
             # f(g(...))
-            return iscomposition(e.args[2], set)
+            return isatomic(e.args[2], set)
         end
     end
     return false

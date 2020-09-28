@@ -4,14 +4,14 @@ using DataFrames
 include("utils.jl")
 
 macro cols(arg)
-    esc(make_vec_to_fun(arg))
+    esc(make_vec_to_fun(arg, false))
 end
 
 macro rows(arg)
-    esc(make_vec_to_fun(arg; byrow = true))
+    esc(make_vec_to_fun(arg, true))
 end
 
-function make_vec_to_fun(e; byrow = false)
+function make_vec_to_fun(e, byrow)
     if isa(e, Expr) && (e.head === :(=))
         # e.g. y = mean(x)
         lhs = e.args[1]
@@ -23,45 +23,44 @@ function make_vec_to_fun(e; byrow = false)
         else
             throw("Malformed Expression")
         end
-        source, f, isatomic = parse_helper(e.args[2]; byrow = byrow)
-        if isatomic
-        	return quote Base.:(=>)($source, $target) end
+        source, f, has_fun = parse_helper(e.args[2], byrow)
+        if has_fun
+            return quote Base.:(=>)($source, Base.:(=>)($f, $target)) end
         else
-        	return quote Base.:(=>)($source, Base.:(=>)($f, $target)) end
+        	return quote Base.:(=>)($source, $target) end
         end
     else
         # e.g. mean(x)
-        source, f, isatomic = parse_helper(e; byrow = byrow)
-        if isatomic
-        	return source
+        source, f, has_fun = parse_helper(e, byrow)
+        if has_fun
+            return quote Base.:(=>)($source, $f) end
         else
-        	return quote Base.:(=>)($source, $f) end
+        	return source
         end
     end
 end
 
-function parse_helper(rhs; byrow = false)
+function parse_helper(rhs, byrow)
     # parse the rhs hand side
     membernames = Dict{Any, Symbol}()
     rhs = parse_columns!(membernames, rhs)
+    source = Expr(:vect, keys(membernames)...)
     if length(keys(membernames)) == 1
         source = first(keys(membernames))
-    else
-        source = Expr(:vect, keys(membernames)...)
     end
     set = Set(values(membernames))
-    if iscomposition(rhs, set)
-        # e.g. mean(skipmissing(x))
-        # avoid anonymous function to avoid compilation
+    if isatomic(rhs, set)
+        # e.g. mean(skipmissing(x)) becomes skipmissing ∘ mean
+        # this avoids anonymous function to avoid compilation
         # Would be nice to also handle x + x but hard (i) order matters (x-y) (ii) duplication matters (x+x)
         f = make_composition(rhs, set)
     else
         f = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
     end
-    if byrow
+    if byrow & !isempty(set)
         f = quote PairsMacros.ByRow($f) end
     end
-    return source, f, rhs ∈ set
+    return source, f, rhs ∉ set
 end
 
 # when Cols() implemented in DataFrames.jl, 
