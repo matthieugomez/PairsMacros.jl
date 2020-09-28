@@ -1,12 +1,10 @@
 [![Build Status](https://travis-ci.com/matthieugomez/PairsMacros.jl.svg?branch=master)](https://travis-ci.com/matthieugomez/PairsMacros.jl)
 [![Coverage Status](https://coveralls.io/repos/matthieugomez/PairsMacros.jl/badge.svg?branch=master)](https://coveralls.io/r/matthieugomez/PairsMacros.jl?branch=master)
 
-
 PairsMacros.jl
 =============
 
 This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`. 
-
 
 ## Syntax
 ```julia

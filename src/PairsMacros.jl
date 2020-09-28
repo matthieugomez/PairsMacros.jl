@@ -1,5 +1,4 @@
 module PairsMacros
-using DataFrames
 
 include("utils.jl")
 
@@ -57,7 +56,7 @@ function parse_helper(rhs, byrow)
         fn = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
     end
     if byrow
-        fn = quote PairsMacros.ByRow($fn) end
+        fn = quote DataFrames.ByRow($fn) end
     end
     return source, fn, rhs ∉ set
 end
