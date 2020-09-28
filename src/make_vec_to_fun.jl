@@ -60,26 +60,26 @@ end
 
 function make_vec_to_fun(e; byrow = false)
     membernames = Dict{Any, Symbol}()
-    # deal with the left hand side
+    # deal with the lhs hand side
     if isa(e, Expr) && (e.head === :(=))
         # e.g. y = mean(x)
-        left = e.args[1]
-        if left isa Symbol
-            target = QuoteNode(left)
-        elseif left.head === :$
-            length(left.args) == 1 || throw("Malformed Expression")
-            target = left.args[1]
+        lhs = e.args[1]
+        if lhs isa Symbol
+            target = QuoteNode(lhs)
+        elseif lhs.head === :$
+            length(lhs.args) == 1 || throw("Malformed Expression")
+            target = lhs.args[1]
         else
             throw("Malformed Expression")
         end
-        right = e.args[2]
+        rhs = e.args[2]
     else
         # e.g. mean(x)
-        right = e
+        rhs = e
     end
 
-    # parse the right hand side
-    right = parse_columns!(membernames, right)
+    # parse the rhs hand side
+    rhs = parse_columns!(membernames, rhs)
     if length(keys(membernames)) == 1
         source = first(keys(membernames))
     else
@@ -87,12 +87,12 @@ function make_vec_to_fun(e; byrow = false)
     end
     set = Set(values(membernames))
     # construct the function f, avoiding anonymous function if possible (avoid compilation)
-    if iscomposition(right, set)
+    if iscomposition(rhs, set)
         # e.g. mean(skipmissing(x))
         # Would be nice to also handle x + x but hard (i) order matters (x-y) (ii) duplication matters (x+x)
-        f = make_composition(right, set)
+        f = make_composition(rhs, set)
     else
-        f = quote $(Expr(:tuple, values(membernames)...)) ->  $right end
+        f = quote $(Expr(:tuple, values(membernames)...)) ->  $rhs end
     end
 
     if byrow
@@ -100,7 +100,7 @@ function make_vec_to_fun(e; byrow = false)
     end
     
     # put everything together
-    if right ∈ set
+    if rhs ∈ set
         # e.g. x
         if isa(e, Expr) && (e.head === :(=))
             return quote Base.:(=>)($source, $target) end

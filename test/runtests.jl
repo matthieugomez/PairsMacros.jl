@@ -1,4 +1,4 @@
-using Test, DataFrames, DataFramesMacros
+using Test, DataFrames, PairsMacros
 df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 # one arg
 @test (@cols(z = sum(x))) == (:x => sum => :z)

@@ -1,4 +1,4 @@
-The DataFramesMacros.jl package is licensed under the MIT "Expat" License:
+The DFMacros.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2020: Matthieu Gomez.
 >

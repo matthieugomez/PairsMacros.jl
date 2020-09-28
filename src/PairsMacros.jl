@@ -1,4 +1,4 @@
-module DataFramesMacros
+module PairsMacros
 using DataFrames
 
 include("make_vec_to_fun.jl")

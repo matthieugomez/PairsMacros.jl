@@ -1,14 +1,14 @@
-[![Build Status](https://travis-ci.com/matthieugomez/DataFramesMacros.jl.svg?branch=master)](https://travis-ci.com/matthieugomez/DataFramesMacros.jl)
-[![Coverage Status](https://coveralls.io/repos/matthieugomez/DataFramesMacros.jl/badge.svg?branch=master)](https://coveralls.io/r/matthieugomez/DataFramesMacros.jl?branch=master)
+[![Build Status](https://travis-ci.com/matthieugomez/PairsMacros.jl.svg?branch=master)](https://travis-ci.com/matthieugomez/PairsMacros.jl)
+[![Coverage Status](https://coveralls.io/repos/matthieugomez/PairsMacros.jl/badge.svg?branch=master)](https://coveralls.io/r/matthieugomez/PairsMacros.jl?branch=master)
 
 
-DataFramesMacros.jl
+PairsMacros.jl
 =============
 
 This package exports two macros, `@cols` and `@rows` that construct calls of the form `args => function => name`.
 
 ```julia
-using DataFramesMacros
+using PairsMacros
 @cols(z = sum(x))
 #> :x => sum => :z
 @rows(z = x + y)
@@ -36,7 +36,7 @@ u = [0.25, 0.75]
 These macros are intended to be used within `transform`/`combine`/`select`/`filter` from  [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl), e.g.
 
 ```julia
-using DataFrames, DataFramesMacros
+using DataFrames, PairsMacros
 df = DataFrame(x = [1, 2], y = [3, 4])
 combine(df, @cols(x_sum = sum(x)), @cols(y_sum = sum(y)))
 #> combine(df, :x => sum => :x_sum, :y => sum => :y_sum)
@@ -47,7 +47,3 @@ filter(@cols(x > 1), df)
 ```
 
 This package builds on the code from [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). However, the approach is more minimial in the sense that the same macro can be used for `transform`/`combine`/`select`/`filter` etc. 
-
-`combine(df, @cols(mean, r"x.*"), @cols(sd, r"x.*"))`
-
-
