@@ -96,7 +96,7 @@ function make_vec_to_fun(e; byrow = false)
     end
 
     if byrow
-        f = quote DataFramesMacros.ByRow($f) end
+        f = quote DataFrames.ByRow($f) end
     end
     
     # put everything together
@@ -115,9 +115,3 @@ function make_vec_to_fun(e; byrow = false)
         end
     end
 end
-
-
-#function make_vec_to_fun(args...; byrow = false)
-#    Expr(:..., Expr(:tuple, (make_vec_to_fun(arg; byrow = byrow) for arg in args)...))
-#end
-
