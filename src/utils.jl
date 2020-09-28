@@ -1,40 +1,5 @@
-##############################################################################
-##
-## Code based on https://github.com/JuliaData/DataFramesMeta.jl/pull/152
-##
-##############################################################################
-
-function addkey!(membernames::Dict, nam)
-    if !haskey(membernames, nam)
-        membernames[nam] = gensym()
-    end
-    membernames[nam]
-end
-
-parse_columns!(membernames::Dict, x) = x
-function parse_columns!(membernames::Dict, q::Symbol)
-    addkey!(membernames, QuoteNode(q))
-end
-function parse_columns!(membernames::Dict, e::Expr)
-    if e.head === :$
-        length(e.args) == 1 || throw("Malformed Expression")
-        addkey!(membernames, e.args[1])
-    elseif (e.head === :call) && (e.args[1] == :^)
-        length(e.args) == 2 || throw("Malformed Expression")
-        e.args[2]
-    elseif e.head === :.
-        length(e.args) == 2 || throw("Malformed Expression")
-        Expr(:., e.args[1], parse_columns!(membernames, e.args[2]))
-    elseif (e.head === :call) && length(e.args) > 1
-        Expr(e.head, e.args[1], (parse_columns!(membernames, x) for x in e.args[2:end])...)
-    elseif (e.head === :call) && length(e.args) == 1
-        e
-    else
-        Expr(e.head, (parse_columns!(membernames, x) for x in e.args)...)
-    end
-end
-
 isatomic(e, set::Set) = false
+
 function isatomic(e::Expr, set::Set)
     if e.head === :call
         if length(e.args) == 1 || ((length(e.args) == 2) && (e.args[2] ∈ set))

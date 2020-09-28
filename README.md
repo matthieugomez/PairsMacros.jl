@@ -4,7 +4,7 @@
 PairsMacros.jl
 =============
 
-This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `args => function => name`. 
+This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `source => function => target`. 
 
 ## Syntax
 ```julia
@@ -32,7 +32,7 @@ u = [0.25, 0.75]
 @cols z = map(^(cos), y)
 #> [:y] => (x -> map(cos, x)) => :z
 @rows z = tryparse(^(Float64), y)
-#> [:y] => (x -> tryparse(Float64, x)) => :z
+#> [:y] => ByRow(x -> tryparse(Float64, x)) => :z
 ```
 ## Goals
 
