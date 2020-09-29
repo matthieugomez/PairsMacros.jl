@@ -4,7 +4,7 @@
 PairsMacros.jl
 =============
 
-This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `source => function => target` for use in [`DataFrames.jl`](https://github.com/JuliaData/DataFrames.jl)
+This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `source => function => target`.
 
 ## Syntax
 ```julia
@@ -37,13 +37,13 @@ u = [0.25, 0.75]
 
 ## Details
 All symbols are assumed to refer to columns, with the exception of:
-- first `args` to a function `:call` or `:.` expression
 - symbol `missing`
+- first `args` to a `:call` or `:.` expression (e.g. functions)
 - arguments inside of a splicing/interpolation expression `$()`
-- symbols inside  `^()`
+- arguments inside  `^()`
 
 ## Goals
-This package is a minimal alternative to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). It makes it easier to work with  [`DataFrames.jl`](https://github.com/JuliaData/DataFrames.jl) `transform`/`combine`/`select`, e.g.:
+This package is a minimal alternative to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). Its goal is to makes it easier construct Pairs for [`DataFrames.jl`](https://github.com/JuliaData/DataFrames.jl) `transform`/`combine`/`select`, e.g.:
 ```julia
 using DataFrames, PairsMacros
 df = DataFrame(x = [1, 2], y = [3, 4])
