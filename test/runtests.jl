@@ -12,7 +12,7 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test transform(df, @cols(z = exp.(x))).z == exp.(df.x)
 @test transform(df, @cols(z = 1)).z == fill(1, size(df, 1))
 @test transform(df, @cols(z = sum([1, 2, 3]))).z == fill(sum([1, 2, 3]), size(df, 1))
-
+@test transform(df, @cols sum(x) first(x)).x_sum == [3, 3]
 
 
 @test transform(df, @rows(z = exp.(x))).z == exp.(df.x)
@@ -29,6 +29,11 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test transform(df, @rows(z = x - y)).z  == df.x .- df.y
 @test transform(df, @rows(z = y - x)).z  == df.y .- df.x
 @test transform(df, @rows(z = x - x)).z  == df.x .- df.x
+@test transform(df, @rows abs(x) x^2).x_abs == abs.(df.x)
+@test transform(df, @rows(z = x^2)).z  == df.x.^2
+@test transform(df, @rows abs(x) x^2).x_abs  == abs.(df.x)
+
+
 df = DataFrame(x = [[-1, -2], [-3, -4]])
 @test transform(df, @rows(z = abs.(x))).z == [abs.(x) for x in df.x]
 

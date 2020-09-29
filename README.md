@@ -52,3 +52,8 @@ using DataFrames, PairsMacros
 df = DataFrame(x = [1, 2], y = [3, 4])
 transform(df, @cols z = sum(x))
 ```
+
+In the context of a `transform`, `combine` or `select` calls, one can add multiple transformations:
+```julia
+transform(df, @cols sum(x) first(x))
+```

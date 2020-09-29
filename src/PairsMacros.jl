@@ -8,10 +8,18 @@ include("utils.jl")
 macro cols(arg)
     esc(rewrite(arg, false))
 end
+macro cols(args...)
+    Expr(:..., Expr(:tuple, (esc(rewrite(x, false)) for x in args)...))
+end
 
 macro rows(arg)
     esc(rewrite(arg, true))
 end
+macro rows(args...)
+    Expr(:..., Expr(:tuple, (esc(rewrite(x, true)) for x in args)...))
+end
+
+
 
 function rewrite(e, byrow)
     if isa(e, Expr) && (e.head === :(=))
@@ -76,7 +84,7 @@ function parse_columns!(membernames::Dict, e::Expr)
     if e.head === SUBSTITUTE
         # e.g. $(x)
         addkey!(membernames, e.args[1])
-    elseif (e.head === :call) && (e.args[1] == LEAVEALONE)
+    elseif (e.head === :call) && (e.args[1] == LEAVEALONE) && (length(e.args) == 2)
         # e.g. ^(x)
         e.args[2]
     elseif ((e.head === :.) & (e.args[1] isa Symbol)) | ((e.head === :call) & (e.args[1] isa Symbol))
