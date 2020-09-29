@@ -10,6 +10,7 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test (@cols(z = sum(skipmissing(x)))) == (:x => sum ∘ skipmissing => :z)
 @test transform(df, @cols(z = exp.(x))).z == exp.(df.x)
 
+@test all(transform(df, @cols one = 1).one .== 1)
 
 @test size(filter(@cols(x > 1), df), 1) == 1
 @test size(filter(@cols((x > 1) & (y < 3)), df), 1) == 0
