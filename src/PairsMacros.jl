@@ -1,5 +1,8 @@
 module PairsMacros
 
+const SUBSTITUTE = :$
+const LEAVEALONE = :^
+
 include("utils.jl")
 
 macro cols(arg)
@@ -9,9 +12,6 @@ end
 macro rows(arg)
     esc(rewrite(arg, true))
 end
-
-const SUBSTITUTE = :$
-const LEAVEALONE = :^
 
 function rewrite(e, byrow)
     if isa(e, Expr) && (e.head === :(=))
@@ -45,22 +45,22 @@ end
 function rewrite_rhs(rhs, byrow)
     # parse the rhs hand side
     membernames = Dict{Any, Symbol}()
-    rhs = parse_columns!(membernames, rhs)
-    source = Expr(:vect, keys(membernames)...)
-    if length(keys(membernames)) == 1
-        source = first(keys(membernames))
+    body = parse_columns!(membernames, rhs)
+    k, v = keys(membernames), values(membernames)
+    if length(k) == 1
+        source = first(k)
+    else
+        source = Expr(:vect, k...)
     end
-    fn = quote $(Expr(:tuple, values(membernames)...)) -> $rhs end
-    set = Set(values(membernames))
-    if isatomic(rhs, set)
-        # e.g. mean(skipmissing(x)) becomes skipmissing ∘ mean
-        # this avoids anonymous function to avoid compilation
-        fn = make_composition(rhs, set)
+    if issimple(body, v)
+        fn = simplify(body, v)
+    else
+        fn = quote $(Expr(:tuple, v...)) -> $body end
     end
     if byrow
         fn = quote DataFrames.ByRow($fn) end
     end
-    return source, fn, rhs ∉ set
+    return source, fn, body ∉ v
 end
 
 parse_columns!(membernames::Dict, x) = x
@@ -69,13 +69,13 @@ function parse_columns!(membernames::Dict, q::Symbol)
 end
 function parse_columns!(membernames::Dict, e::Expr)
     if e.head === SUBSTITUTE
-        length(e.args) == 1 || throw("Malformed Expression")
+        #length(e.args) == 1 || throw("Malformed Expression")
         addkey!(membernames, e.args[1])
     elseif (e.head === :call) && (e.args[1] == LEAVEALONE)
-        length(e.args) == 2 || throw("Malformed Expression")
+        #length(e.args) == 2 || throw("Malformed Expression")
         e.args[2]
     elseif e.head === :.
-        length(e.args) == 2 || throw("Malformed Expression")
+        #length(e.args) == 2 || throw("Malformed Expression")
         Expr(:., e.args[1], parse_columns!(membernames, e.args[2]))
     elseif (e.head === :call) && length(e.args) > 1
         Expr(e.head, e.args[1], (parse_columns!(membernames, x) for x in e.args[2:end])...)
@@ -92,7 +92,6 @@ function addkey!(membernames::Dict, nam)
     end
     membernames[nam]
 end
-
 
 # when Cols() implemented in DataFrames.jl, 
 # @cols(f, r".*") could be used to return Cols(r".*") .=> f
