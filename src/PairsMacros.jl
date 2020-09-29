@@ -65,8 +65,12 @@ function rewrite_rhs(rhs, byrow)
 end
 
 parse_columns!(membernames::Dict, x) = x
-function parse_columns!(membernames::Dict, q::Symbol)
-    addkey!(membernames, QuoteNode(q))
+function parse_columns!(membernames::Dict, x::Symbol)
+    if x === :missing
+        x
+    else
+        addkey!(membernames, QuoteNode(x))
+    end
 end
 function parse_columns!(membernames::Dict, e::Expr)
     if e.head === SUBSTITUTE
