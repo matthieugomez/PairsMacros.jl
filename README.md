@@ -41,7 +41,7 @@ u = [0.25, 0.75]
 ## Details
 All symbols are assumed to refer to columns, with the exception of:
 - symbol `missing`
-- first `args` to a `:call` or `:.` expression (e.g. function calls)
+- first `args` of a `:call` or `:.` expression (e.g. function calls)
 - arguments inside of a splicing/interpolation expression `$()`
 - arguments inside  `^()`
 

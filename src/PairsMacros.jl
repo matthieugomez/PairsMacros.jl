@@ -79,7 +79,7 @@ function parse_columns!(membernames::Dict, e::Expr)
     elseif (e.head === :call) && (e.args[1] == LEAVEALONE)
         # e.g. ^(x)
         e.args[2]
-    elseif (e.head === :.) | (e.head === :call)
+    elseif ((e.head === :.) & (e.args[1] isa Symbol)) | ((e.head === :call) & (e.args[1] isa Symbol))
         # e.g. f(x) or f.(x)
         Expr(e.head, e.args[1], 
             (parse_columns!(membernames, x) for x in Iterators.drop(e.args, 1))...)
