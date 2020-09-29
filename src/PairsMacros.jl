@@ -27,19 +27,20 @@ function rewrite(e, byrow)
         end
         source, fn, has_fn = rewrite_rhs(e.args[2], byrow)
         if has_fn
-            return quote Base.:(=>)($source, Base.:(=>)($fn, $target)) end
+            out = quote $source => $fn => $target end
         else
-            return quote Base.:(=>)($source, $target) end
+            out = quote $source => $target end
         end
     else
         # e.g. mean(x)
         source, fn, has_fn = rewrite_rhs(e, byrow)
         if has_fn
-            return quote Base.:(=>)($source, $fn) end
+            out = quote $source => $fn end
         else
-            return source
+            out = source
         end
     end
+    return out
 end
 
 function rewrite_rhs(rhs, byrow)
@@ -52,8 +53,8 @@ function rewrite_rhs(rhs, byrow)
     else
         source = Expr(:vect, k...)
     end
-    if issimple(body, v)
-        fn = simplify(body, v)
+    if is_circ(body, v)
+        fn = make_circ(body, v)
     else
         fn = quote $(Expr(:tuple, v...)) -> $body end
     end
