@@ -70,18 +70,15 @@ function parse_columns!(membernames::Dict, q::Symbol)
 end
 function parse_columns!(membernames::Dict, e::Expr)
     if e.head === SUBSTITUTE
-        #length(e.args) == 1 || throw("Malformed Expression")
+        # Case $(x)
         addkey!(membernames, e.args[1])
     elseif (e.head === :call) && (e.args[1] == LEAVEALONE)
-        #length(e.args) == 2 || throw("Malformed Expression")
+        # Case ^(x)
         e.args[2]
-    elseif e.head === :.
-        #length(e.args) == 2 || throw("Malformed Expression")
-        Expr(:., e.args[1], parse_columns!(membernames, e.args[2]))
-    elseif (e.head === :call) && length(e.args) > 1
-        Expr(e.head, e.args[1], (parse_columns!(membernames, x) for x in e.args[2:end])...)
-    elseif (e.head === :call) && length(e.args) == 1
-        e
+    elseif (e.head === :.) | ((e.head === :call) && length(e.args) > 1)
+        # Case f(x) or f.(x)
+        Expr(e.head, e.args[1], 
+            (parse_columns!(membernames, x) for x in Iterators.drop(e.args, 1))...)
     else
         Expr(e.head, (parse_columns!(membernames, x) for x in e.args)...)
     end
