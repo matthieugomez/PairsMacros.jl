@@ -1,25 +1,70 @@
 module PairsMacros
-
-const SUBSTITUTE = :$
-const LEAVEALONE = :^
-
 include("utils.jl")
 
+"""
+Create Pairs expressions for use in `DataFrames.jl`
+
+### Details
+All symbols are assumed to refer to columns in the DataFrames, with the exception of:
+- `missing`
+- first `args` of a `:call` or `:.` expression (function calls)
+- arguments inside of a splicing/interpolation expression `\$()` (refer to column names programatically).
+- arguments inside  `^()` (refer to outside variables)
+
+See also `@rows`
+
+### Examples
+```julia
+julia> using PairsMacros
+julia> @cols z = sum(x)
+[:x] => sum => :z
+julia> u = :y
+julia> @cols z = sum(\$u)
+[:y] => sum => :z
+julia> @cols \$u = sum(x)
+[:x] => sum => :y
+julia> @cols z = sum(\$"my variable name")
+"my variable name" => sum => :z
+julia> @cols z = map(^(cos), y)
+[:y] => (x -> map(cos, x)) => :z
+```
+"""
 macro cols(arg)
     esc(rewrite(arg, false))
 end
-macro cols(args...)
-    Expr(:..., Expr(:tuple, (esc(rewrite(x, false)) for x in args)...))
-end
 
+"""
+Create Pairs expressions for use in `DataFrames.jl`, where the function is enclosed by `ByRow`
+
+### Details
+All symbols are assumed to refer to columns in the DataFrames, with the exception of:
+- `missing`
+- first `args` of a `:call` or `:.` expression (function calls)
+- arguments inside of a splicing/interpolation expression `\$()` (refer to column names programatically).
+- arguments inside  `^()` (refer to outside variables)
+
+See also `@cols`
+
+### Examples
+```julia
+using PairsMacros
+julia> @rows z = abs(x)
+[:x] => ByRow(abs) => :z
+julia> @rows z = tryparse(^(Float64), x)
+[:x] => (x -> tryparse(Float64, x) => :z
+```
+"""
 macro rows(arg)
     esc(rewrite(arg, true))
+end
+
+# multiple argument version
+macro cols(args...)
+    Expr(:..., Expr(:tuple, (esc(rewrite(x, false)) for x in args)...))
 end
 macro rows(args...)
     Expr(:..., Expr(:tuple, (esc(rewrite(x, true)) for x in args)...))
 end
-
-
 
 function rewrite(e, byrow)
     if isa(e, Expr) && (e.head === :(=))
@@ -27,7 +72,7 @@ function rewrite(e, byrow)
         lhs = e.args[1]
         if lhs isa Symbol
             target = QuoteNode(lhs)
-        elseif lhs.head === SUBSTITUTE
+        elseif lhs.head === :$
             target = lhs.args[1]
         end
         source, fn, has_fn = rewrite_rhs(e.args[2], byrow)
@@ -81,10 +126,10 @@ function parse_columns!(membernames::Dict, x::Symbol)
     end
 end
 function parse_columns!(membernames::Dict, e::Expr)
-    if e.head === SUBSTITUTE
+    if e.head === :$
         # e.g. $(x)
         addkey!(membernames, e.args[1])
-    elseif (e.head === :call) && (e.args[1] == LEAVEALONE) && (length(e.args) == 2)
+    elseif (e.head === :call) && (e.args[1] == :^) && (length(e.args) == 2)
         # e.g. ^(x)
         e.args[2]
     elseif ((e.head === :.) & (e.args[1] isa Symbol)) | ((e.head === :call) & (e.args[1] isa Symbol))
