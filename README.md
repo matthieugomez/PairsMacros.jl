@@ -22,6 +22,9 @@ u = :y
 #> [:y] => sum => :z
 @cols $u = sum(x)
 #> [:x] => sum => :y
+u = "my variable name"
+@cols z = sum($u)
+"my variable name" => sum => :z
 ```
 
 Use `^` to denote variables that do not refer to columns
@@ -38,7 +41,7 @@ u = [0.25, 0.75]
 ## Details
 All symbols are assumed to refer to columns, with the exception of:
 - symbol `missing`
-- first `args` to a `:call` or `:.` expression (e.g. functions)
+- first `args` to a `:call` or `:.` expression (e.g. function calls)
 - arguments inside of a splicing/interpolation expression `$()`
 - arguments inside  `^()`
 

@@ -19,6 +19,9 @@ df = DataFrame(x = [1, 2], y = [3, 4], z = [5, 6])
 @test isequal(transform(df, @rows(z2 = x >= 2 ? missing : z)).z2, [5, missing])
 
 
+
+
+
 @test size(filter(@cols(x > 1), df), 1) == 1
 @test size(filter(@cols((x > 1) & (y < 3)), df), 1) == 0
 
@@ -46,4 +49,12 @@ u = [3, 4]
 # test hygiene
 mean = x -> x
 @test transform(df, @cols(z = mean(x))).z == df.x
+
+
+# weird symbols
+df = DataFrame(x = [1, 2])
+@test transform!(df, @cols($("ok now") = x))."ok now" == df.x
+@test transform(df, @cols(z = sum($("ok now")))).z == [3, 3]
+
+
 
