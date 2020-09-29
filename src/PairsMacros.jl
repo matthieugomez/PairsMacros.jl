@@ -52,8 +52,8 @@ function rewrite_rhs(rhs, byrow)
     end
     if is_circ(body, v)
         # e.g. mean(skipmissing(x))
-        # in this case avoid anonymous function
-        # i.e. use mean ∘ skipmissing rather than x -> mean(skipmissing(x))
+        # in this case, use mean ∘ skipmissing rather than x -> mean(skipmissing(x))
+        # avoid precompilation + allow fast path
         fn = make_circ(body, v)
     else
         fn = quote $(Expr(:tuple, v...)) -> $body end
