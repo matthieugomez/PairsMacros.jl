@@ -41,7 +41,6 @@ function rewrite(e, byrow)
 end
 
 function rewrite_rhs(rhs, byrow)
-    # parse the rhs hand side
     membernames = Dict{Any, Symbol}()
     body = parse_columns!(membernames, rhs)
     k, v = keys(membernames), values(membernames)
@@ -52,10 +51,11 @@ function rewrite_rhs(rhs, byrow)
     end
     if is_circ(body, v)
         # e.g. mean(skipmissing(x))
-        # in this case, use mean ∘ skipmissing rather than x -> mean(skipmissing(x))
-        # avoid precompilation + allow fast path
+        # in this case, use mean ∘ skipmissing
+        # this avoids precompilation + allows fast path
         fn = make_circ(body, v)
     else
+        # in this case, use anonymous function
         fn = quote $(Expr(:tuple, v...)) -> $body end
     end
     if byrow
