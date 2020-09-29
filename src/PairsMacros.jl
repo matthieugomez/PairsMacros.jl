@@ -20,10 +20,7 @@ function rewrite(e, byrow)
         if lhs isa Symbol
             target = QuoteNode(lhs)
         elseif lhs.head === SUBSTITUTE
-            length(lhs.args) == 1 || throw("Malformed Expression")
             target = lhs.args[1]
-        else
-            throw("Malformed Expression")
         end
         source, fn, has_fn = rewrite_rhs(e.args[2], byrow)
         if has_fn
@@ -54,6 +51,9 @@ function rewrite_rhs(rhs, byrow)
         source = Expr(:vect, k...)
     end
     if is_circ(body, v)
+        # e.g. mean(skipmissing(x))
+        # in this case avoid anonymous function
+        # i.e. use mean ∘ skipmissing rather than x -> mean(skipmissing(x))
         fn = make_circ(body, v)
     else
         fn = quote $(Expr(:tuple, v...)) -> $body end
@@ -70,17 +70,18 @@ function parse_columns!(membernames::Dict, q::Symbol)
 end
 function parse_columns!(membernames::Dict, e::Expr)
     if e.head === SUBSTITUTE
-        # Case $(x)
+        # e.g. $(x)
         addkey!(membernames, e.args[1])
     elseif (e.head === :call) && (e.args[1] == LEAVEALONE)
-        # Case ^(x)
+        # e.g. ^(x)
         e.args[2]
-    elseif (e.head === :.) | ((e.head === :call) && length(e.args) > 1)
-        # Case f(x) or f.(x)
+    elseif (e.head === :.) | (e.head === :call)
+        # e.g. f(x) or f.(x)
         Expr(e.head, e.args[1], 
             (parse_columns!(membernames, x) for x in Iterators.drop(e.args, 1))...)
     else
-        Expr(e.head, (parse_columns!(membernames, x) for x in e.args)...)
+        Expr(e.head, 
+            (parse_columns!(membernames, x) for x in e.args)...)
     end
 end
 
