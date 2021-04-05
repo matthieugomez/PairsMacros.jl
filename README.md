@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.com/matthieugomez/PairsMacros.jl.svg?branch=master)](https://travis-ci.com/matthieugomez/PairsMacros.jl)
-[![Coverage Status](https://coveralls.io/repos/matthieugomez/PairsMacros.jl/badge.svg?branch=master)](https://coveralls.io/r/matthieugomez/PairsMacros.jl?branch=master)
+[![Build status](https://github.com/matthieugomez/PairsMacros.jl/workflows/CI/badge.svg)](https://github.com/matthieugomez/PairsMacros.jl/actions)
 
 PairsMacros.jl
 =============
