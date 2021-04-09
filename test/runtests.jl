@@ -47,7 +47,7 @@ u = [:y]
 
 # test obj
 u = [3, 4]
-@test combine(df, @cols(z = sum(^(u)))).z == [sum(u)]
+@test combine(df, @cols(z = sum(esc(u)))).z == [sum(u)]
 
 
 # test hygiene

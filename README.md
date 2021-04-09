@@ -26,14 +26,14 @@ u = "my variable name"
 "my variable name" => sum => :z
 ```
 
-Use `^` to denote variables that do not refer to columns
+Use `esc` to denote variables that do not refer to columns
 ```julia
 u = [0.25, 0.75]
-@cols z = quantile(y, ^(u))
+@cols z = quantile(y, esc(u))
 #> [:y] => (x -> quantile(x, u)) => :z
-@cols z = map(^(cos), y)
+@cols z = map(esc(cos), y)
 #> [:y] => (x -> map(cos, x)) => :z
-@rows z = tryparse(^(Float64), y)
+@rows z = tryparse(esc(Float64), y)
 #> [:y] => ByRow(x -> tryparse(Float64, x)) => :z
 ```
 
@@ -42,7 +42,7 @@ All symbols are assumed to refer to columns, with the exception of:
 - symbol `missing`
 - first `args` of a `:call` or `:.` expression (e.g. function calls)
 - arguments inside of a splicing/interpolation expression `$()`
-- arguments inside  `^()`
+- arguments inside  `esc()`
 
 ## Goals
 This package is a minimal alternative to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl). Its goal is to makes it easier construct Pairs for [`DataFrames.jl`](https://github.com/JuliaData/DataFrames.jl) `transform`/`combine`/`select`, e.g.:

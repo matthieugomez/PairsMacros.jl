@@ -25,7 +25,7 @@ julia> @cols \$u = sum(x)
 [:x] => sum => :y
 julia> @cols z = sum(\$"my variable name")
 "my variable name" => sum => :z
-julia> @cols z = map(^(cos), y)
+julia> @cols z = map(esc(cos), y)
 [:y] => (x -> map(cos, x)) => :z
 ```
 """
@@ -41,7 +41,7 @@ All symbols are assumed to refer to columns in the DataFrames, with the exceptio
 - `missing`
 - first `args` of a `:call` or `:.` expression (function calls)
 - arguments inside of a splicing/interpolation expression `\$()` (refer to column names programatically).
-- arguments inside  `^()` (refer to outside variables)
+- arguments inside  `esc` (refer to outside variables)
 
 See also `@cols`
 
@@ -50,7 +50,7 @@ See also `@cols`
 using PairsMacros
 julia> @rows z = abs(x)
 [:x] => ByRow(abs) => :z
-julia> @rows z = tryparse(^(Float64), x)
+julia> @rows z = tryparse(esc(Float64), x)
 [:x] => (x -> tryparse(Float64, x) => :z
 ```
 """
@@ -129,8 +129,11 @@ function parse_columns!(membernames::Dict, e::Expr)
     if e.head === :$
         # e.g. $(x)
         addkey!(membernames, e.args[1])
+    elseif (e.head === :call) && (e.args[1] == :esc) && (length(e.args) == 2)
+        e.args[2]
     elseif (e.head === :call) && (e.args[1] == :^) && (length(e.args) == 2)
         # e.g. ^(x)
+        @warn "^() for escaping is deprecated, use esc() instead"
         e.args[2]
     elseif ((e.head === :.) & (e.args[1] isa Symbol)) | ((e.head === :call) & (e.args[1] isa Symbol))
         # e.g. f(x) or f.(x)
