@@ -9,7 +9,7 @@ All symbols are assumed to refer to columns in the DataFrames, with the exceptio
 - `missing`
 - first `args` of a `:call` or `:.` expression (function calls)
 - arguments inside of a splicing/interpolation expression `\$()` (refer to column names programatically).
-- arguments inside  `^()` (refer to outside variables)
+- arguments inside  `esc()` (refer to outside variables)
 
 See also `@rows`
 
