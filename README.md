@@ -9,11 +9,19 @@ This package exports two macros, `@cols` and `@rows` that make it easier to cons
 
 ## Syntax
 ```julia
-using PairsMacros
+using  PairsMacros
 @cols z = sum(x)
 #> [:x] => sum => :z
 @rows z = x + y
 #> [:x, :y] => ByRow(+) => :z
+```
+
+Use within a call to `transform`, `select`, `subset`, etc
+```julia
+using  DataFrames, PairsMacros
+df = DataFrame(x = [1, 2])
+transform(df, @cols y = sum(x))
+transform(df, @rows y = x >= 2 ? 1 : x)
 ```
 
 Use `$` to substitute the name of certain columns by symbols
@@ -45,11 +53,3 @@ All symbols are assumed to refer to columns, with the exception of:
 - first `args` of a `:call` or `:.` expression (e.g. function calls)
 - arguments inside of a splicing/interpolation expression `$()`
 - arguments inside  `esc()`
-
-## DataFrames
-The macros can be used as arguemnts in `transform`, `select`, `subset`, etc 
-```julia
-using DataFrames, PairsMacros
-df = DataFrame(x = [1, 2], y = [3, 4])
-transform(df, @cols z = sum(x))
-```
