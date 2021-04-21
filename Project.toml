@@ -1,6 +1,6 @@
 name = "PairsMacros"
 uuid = "a3ed533e-75b3-46cb-ad8a-82d33aefb744"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 
