@@ -5,8 +5,6 @@ PairsMacros.jl
 
 This package exports two macros, `@cols` and `@rows` that make it easier to construct calls of the form `source => function => target`. This is a minimal alternative to [DataFramesMeta.jl](https://github.com/JuliaData/DataFramesMeta.jl).
 
-
-
 ## Syntax
 ```julia
 using  PairsMacros
@@ -16,7 +14,7 @@ using  PairsMacros
 #> [:x, :y] => ByRow(+) => :z
 ```
 
-Use within a call to `transform`, `select`, `subset`, etc
+Use as an argumetn of DataFrames.jl `transform`, `select`, `subset`, etc
 ```julia
 using  DataFrames, PairsMacros
 df = DataFrame(x = [1, 2])
