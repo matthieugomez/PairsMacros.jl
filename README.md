@@ -44,7 +44,7 @@ u = [0.25, 0.75]
 
 
 ## Example
-Use `PairsMacros` in conjunction with `DataFrames` and `Chain`:
+Use `PairsMacros` in conjunction with `DataFrames`
 ```julia
 using DataFrames, Chain, Statistics, PairsMacros
 df = DataFrame(a = repeat(1:5, outer = 20),
