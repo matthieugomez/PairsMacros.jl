@@ -49,6 +49,26 @@ u = [0.25, 0.75]
 #> [:y] => ByRow(x -> tryparse(Float64, x)) => :z
 ```
 
+
+## Example
+
+```julia
+using DataFrames, Chain, Statistics, PairsMacros
+df = DataFrame(a = repeat(1:5, outer = 20),
+               b = repeat(["a", "b", "c", "d"], inner = 25),
+               x = repeat(1:20, inner = 5))
+
+x_thread = @chain df begin
+    transform(@rows y = 10 * x)
+    subset(@rows a > 2)
+    groupby(:b)
+    combine(@cols meanX = mean(x) meanY = mean(y))
+    sort(:meanX)
+    select(@cols meanX meanY var = b)
+end
+
+
+
 ## Details
 All symbols are assumed to refer to columns, with the exception of:
 - symbol `missing`
