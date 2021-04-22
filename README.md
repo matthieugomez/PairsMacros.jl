@@ -18,13 +18,6 @@ using  PairsMacros
 #> [:x, :y] => ByRow(+) => :z
 ```
 
-Using the macro as an argument of `transform`:
-```julia
-using  DataFrames, PairsMacros
-df = DataFrame(x = [1, 2])
-transform(df, @cols y = sum(x))
-transform(df, @rows y = x >= 2 ? 1 : x)
-```
 
 Use `$` to substitute the name of certain columns by symbols
 ```julia
@@ -51,13 +44,16 @@ u = [0.25, 0.75]
 
 
 ## Example
-
+Use `PairsMacros` in conjunction with `DataFrames` and `Chain`:
 ```julia
 using DataFrames, Chain, Statistics, PairsMacros
 df = DataFrame(a = repeat(1:5, outer = 20),
                b = repeat(["a", "b", "c", "d"], inner = 25),
                x = repeat(1:20, inner = 5))
-
+transform(@rows y = 10 * x)
+```
+Use `Chain` for a sequence of transformations:
+```julia
 x_thread = @chain df begin
     transform(@rows y = 10 * x)
     subset(@rows a > 2)
@@ -66,6 +62,7 @@ x_thread = @chain df begin
     sort(:meanX)
     select(@cols meanX meanY var = b)
 end
+```
 
 
 
